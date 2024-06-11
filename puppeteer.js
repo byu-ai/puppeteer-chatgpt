@@ -1,9 +1,9 @@
 const puppeteer = require('puppeteer-core');
-const path = require('path');
+const { executablePath } = require('@puppeteer/browsers');
 
 async function askChatGPT(prompt) {
     const browser = await puppeteer.launch({
-        executablePath: path.resolve(__dirname, '.local-chromium', 'chrome-linux', 'chrome'), // Adjust this path if necessary
+        executablePath: executablePath('chromium'),
         args: ['--no-sandbox']
     });
     const page = await browser.newPage();
