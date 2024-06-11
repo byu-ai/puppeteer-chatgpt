@@ -1,9 +1,20 @@
 const puppeteer = require('puppeteer-core');
-const { executablePath } = require('@puppeteer/browsers');
+const path = require('path');
+const { install, getExecutablePath } = require('@puppeteer/browsers');
 
 async function askChatGPT(prompt) {
+    // Install Chromium
+    await install({
+        browser: 'chromium',
+        buildId: 'latest',
+        cacheDir: path.join(__dirname, '.local-chromium')
+    });
+
+    // Get the executable path of Chromium
+    const executablePath = getExecutablePath('chromium', 'latest');
+
     const browser = await puppeteer.launch({
-        executablePath: executablePath('chromium'),
+        executablePath,
         args: ['--no-sandbox']
     });
     const page = await browser.newPage();
