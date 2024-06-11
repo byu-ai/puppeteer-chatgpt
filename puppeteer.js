@@ -22,22 +22,22 @@ async function askChatGPT(prompt) {
             await page.click(loginSelector);
 
             await page.waitForSelector(emailSelector, { timeout: 60000 });
-            await page.type(emailSelector, 'adalenh25@gmail.com');
-            await page.type(passwordSelector, 'chatGPTpassword');
+            await page.type(emailSelector, 'your-email@example.com');  // Replace with your email
+            await page.type(passwordSelector, 'your-password');  // Replace with your password
             await page.click(loginButtonSelector);
 
             await page.waitForNavigation({ waitUntil: 'networkidle2' });
         }
 
         console.log('Waiting for the text area...');
-        await page.waitForSelector('textarea', { timeout: 60000 });
+        await page.waitForSelector('textarea', { timeout: 90000 });  // Increased timeout
 
         console.log('Typing the prompt...');
         await page.type('textarea', prompt);
         await page.keyboard.press('Enter');
 
         console.log('Waiting for the response...');
-        await page.waitForSelector('.response-class', { timeout: 60000 });  // Update the correct response selector
+        await page.waitForSelector('.response-class', { timeout: 90000 });  // Update the correct response selector
 
         console.log('Extracting the response...');
         const response = await page.evaluate(() => {
