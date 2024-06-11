@@ -21,6 +21,7 @@ app.post('/ask-chatgpt', async (req, res) => {
     }
 });
 
-const listener = app.listen(process.env.PORT || 3000, () => {
+const PORT = process.env.PORT || 3000;
+const listener = app.listen(PORT, () => {
     console.log(`Your app is listening on port ${listener.address().port}`);
 });
