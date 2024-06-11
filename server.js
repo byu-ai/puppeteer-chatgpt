@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const askChatGPT = require('./puppeteer');
 
 const app = express();
 const port = process.env.PORT || 10000;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/ask-chatgpt', async (req, res) => {
