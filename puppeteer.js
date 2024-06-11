@@ -1,10 +1,7 @@
-const puppeteer = require('puppeteer-core');
-const { executablePath } = require('puppeteer');
+const puppeteer = require('puppeteer');
 
-// This function asks ChatGPT and returns the response
 async function askChatGPT(prompt) {
     const browser = await puppeteer.launch({
-        executablePath: executablePath(),
         args: ['--no-sandbox']
     });
     const page = await browser.newPage();
