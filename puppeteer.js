@@ -8,10 +8,10 @@ async function askChatGPT(prompt) {
 
     try {
         console.log('Navigating to ChatGPT...');
-        await page.goto('https://chat.openai.com/chat');
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
 
         console.log('Waiting for the text area...');
-        await page.waitForSelector('textarea');
+        await page.waitForSelector('textarea', { timeout: 60000 });
 
         console.log('Typing the prompt...');
         await page.type('textarea', prompt);
