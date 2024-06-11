@@ -10,6 +10,15 @@ async function askChatGPT(prompt) {
         console.log('Navigating to ChatGPT...');
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
 
+        // Handle login if necessary
+        if (await page.$('input[name="username"]')) {
+            console.log('Logging in...');
+            await page.type('input[name="username"]', 'adalenh25@gmail.com');
+            await page.type('input[name="password"]', 'chatGPTpassword');
+            await page.click('button[type="submit"]');
+            await page.waitForNavigation({ waitUntil: 'networkidle2' });
+        }
+
         console.log('Waiting for the text area...');
         await page.waitForSelector('textarea', { timeout: 60000 });
 
