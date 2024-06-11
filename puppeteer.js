@@ -2,22 +2,14 @@ const puppeteer = require('puppeteer');
 
 async function askChatGPT(prompt) {
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox']
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
 
     try {
         console.log('Navigating to ChatGPT...');
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
-
-        // Handle login if necessary
-        if (await page.$('input[name="username"]') || await page.$('input[name="email"]')) {
-            console.log('Logging in...');
-            await page.type('input[name="username"], input[name="email"]', 'adalenh25@gmail.com');
-            await page.type('input[name="password"]', 'chatGPTpassword');
-            await page.click('button[type="submit"]');
-            await page.waitForNavigation({ waitUntil: 'networkidle2' });
-        }
 
         console.log('Waiting for the text area...');
         await page.waitForSelector('textarea', { timeout: 60000 });
