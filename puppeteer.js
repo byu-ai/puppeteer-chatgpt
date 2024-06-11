@@ -3,15 +3,15 @@ const puppeteer = require('puppeteer');
 async function askChatGPT(prompt) {
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
 
     try {
         console.log('Navigating to ChatGPT...');
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
+        await page.goto('https://chat.openai.com/', { waitUntil: 'networkidle2' });
 
-        // Check if login page is displayed
+        // Check if login page is displayed and handle login
         const loginSelector = 'button[data-testid="login"]';
         const emailSelector = 'input[name="email"]';
         const passwordSelector = 'input[name="password"]';
@@ -30,23 +30,23 @@ async function askChatGPT(prompt) {
         }
 
         console.log('Waiting for the text area...');
-        await page.waitForSelector('textarea', { timeout: 90000 });  // Increased timeout
+        await page.waitForSelector('#prompt-textarea', { timeout: 90000 });
 
-        console.log('Typing the prompt...');
-        await page.type('textarea', prompt);
-        await page.keyboard.press('Enter');
+        console.log('Entering prompt...');
+        await page.type('#prompt-textarea', prompt);
 
-        console.log('Waiting for the response...');
-        await page.waitForSelector('.response-class', { timeout: 90000 });  // Update the correct response selector
+        console.log('Sending the prompt...');
+        await page.click('button[data-testid="send-button"]');
 
-        console.log('Extracting the response...');
+        await page.waitForSelector('.message-wrapper', { timeout: 90000 });
+
         const response = await page.evaluate(() => {
-            const responseElement = document.querySelector('.response-class');  // Update the correct response selector
-            return responseElement ? responseElement.innerText : 'No response';
+            const messages = Array.from(document.querySelectorAll('.message-wrapper'));
+            return messages[messages.length - 1].innerText;
         });
 
+        console.log('Response received:', response);
         await browser.close();
-        console.log('Response:', response);
         return response;
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
