@@ -1,26 +1,13 @@
 const puppeteer = require('puppeteer-core');
-const path = require('path');
-const { install, getExecutablePath } = require('@puppeteer/browsers');
+const { executablePath } = require('puppeteer');
 
+// This function asks ChatGPT and returns the response
 async function askChatGPT(prompt) {
-    const revision = '982053'; // Known-good revision
-    const browser = 'chromium';
-
-    // Install Chromium
-    await install({
-        browser,
-        buildId: revision,
-        cacheDir: path.join(__dirname, '.local-chromium')
-    });
-
-    // Get the executable path of Chromium
-    const executablePath = getExecutablePath(browser, revision);
-
-    const browserInstance = await puppeteer.launch({
-        executablePath,
+    const browser = await puppeteer.launch({
+        executablePath: executablePath(),
         args: ['--no-sandbox']
     });
-    const page = await browserInstance.newPage();
+    const page = await browser.newPage();
 
     try {
         console.log('Navigating to ChatGPT...');
@@ -42,12 +29,12 @@ async function askChatGPT(prompt) {
             return responseElement ? responseElement.innerText : 'No response';
         });
 
-        await browserInstance.close();
+        await browser.close();
         console.log('Response:', response);
         return response;
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
-        await browserInstance.close();
+        await browser.close();
         throw error;
     }
 }
