@@ -38,12 +38,18 @@ async function askChatGPT(prompt) {
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 180000 });
         console.log('Page loaded');
 
+        // Wait for potential dynamic content to load
+        await page.waitForTimeout(5000);
+        
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
             return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
         });
 
         if (!promptInputExists) {
+            // Log the page content for debugging
+            const content = await page.content();
+            console.log(content);
             throw new Error('Prompt textarea is not present on the page');
         }
 
