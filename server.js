@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const askChatGPT = require('./puppeteer');
+const { askChatGPT } = require('./puppeteer');
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -19,6 +19,7 @@ app.post('/ask-chatgpt', async (req, res) => {
         const response = await askChatGPT(prompt);
         res.json({ response });
     } catch (error) {
+        console.error('Error asking ChatGPT:', error);
         res.status(500).json({ error: error.message });
     }
 });
