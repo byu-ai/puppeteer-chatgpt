@@ -31,7 +31,7 @@ async function askChatGPT(prompt) {
 
     try {
         // Go to the ChatGPT chat page directly with an increased timeout
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 120000 });
 
         // Log the page content to see what is being loaded
         const content = await page.content();
@@ -63,7 +63,7 @@ async function askChatGPT(prompt) {
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
-        await page.waitForSelector(responseSelector, { timeout: 60000 });
+        await page.waitForSelector(responseSelector, { timeout: 120000 });
 
         let previousLength = 0;
         let currentLength = 0;
@@ -102,7 +102,14 @@ async function askChatGPT(prompt) {
         return response || 'No response found';
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
-        await page.screenshot({ path: 'error_screenshot.png' }); // Capture screenshot on error (optional)
+
+        // Capture screenshot on error (optional)
+        try {
+            await page.screenshot({ path: 'error_screenshot.png' });
+        } catch (screenshotError) {
+            console.error('Error capturing screenshot:', screenshotError);
+        }
+
         await browser.close();
         throw error;
     }
