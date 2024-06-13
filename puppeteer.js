@@ -47,10 +47,26 @@ async function askChatGPT(prompt) {
         });
 
         if (!promptInputExists) {
+            console.log('Detected Cloudflare challenge or other issue. Attempting to solve...');
             // Log the page content for debugging
             const content = await page.content();
             console.log(content);
-            throw new Error('Prompt textarea is not present on the page');
+
+            // Capture screenshot
+            await page.screenshot({ path: 'cloudflare_challenge.png' });
+
+            // Retry navigation to bypass challenge
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 180000 });
+            await page.waitForTimeout(5000);
+
+            // Recheck for prompt textarea
+            const promptInputExistsRetry = await page.evaluate(() => {
+                return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
+            });
+
+            if (!promptInputExistsRetry) {
+                throw new Error('Prompt textarea is not present on the page after retry');
+            }
         }
 
         console.log('Prompt textarea is present');
