@@ -37,6 +37,9 @@ async function askChatGPT(prompt) {
         const content = await page.content();
         console.log(content);
 
+        // Capture a screenshot of the loaded page
+        await page.screenshot({ path: 'loaded_page.png' });
+
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
             return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
@@ -68,7 +71,10 @@ async function askChatGPT(prompt) {
         return response;
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
-        await page.screenshot({ path: 'error_screenshot.png' }); // Capture screenshot on error (optional)
+
+        // Capture screenshot on error (optional)
+        await page.screenshot({ path: 'error_screenshot.png' });
+        
         await browser.close();
         throw error;
     }
