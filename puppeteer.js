@@ -39,7 +39,6 @@ async function askChatGPT(prompt) {
         });
 
         if (!promptInputExists) {
-            console.log('Prompt textarea is not present on the page');
             throw new Error('Prompt textarea is not present on the page');
         }
 
@@ -53,7 +52,7 @@ async function askChatGPT(prompt) {
         await page.waitForFunction(() => {
             const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
             return sendButton && !sendButton.disabled;
-        }, { timeout: 120000 });
+        }, { timeout: 60000 });
 
         // Click the send button
         await page.click('button[data-testid="fruitjuice-send-button"]');
@@ -63,15 +62,14 @@ async function askChatGPT(prompt) {
         await page.waitForSelector(responseSelector, { timeout: 180000 });
 
         let previousLength = 0;
-        let currentLength = 0;
         let responseComplete = false;
         let response = '';
-        const maxChecks = 60; // Max checks to prevent infinite loop
+        const maxChecks = 120; // Max checks to prevent infinite loop
         let checkCount = 0;
 
         while (!responseComplete && checkCount < maxChecks) {
             checkCount++;
-            await page.waitForTimeout(1000); // Wait for a second before checking again
+            await page.waitForTimeout(2000); // Wait for 2 seconds before checking again
 
             // Get the response text so far
             response = await page.evaluate(() => {
@@ -79,23 +77,19 @@ async function askChatGPT(prompt) {
                 return responseElement ? responseElement.innerText : '';
             });
 
-            currentLength = response.length;
-
             // Check if the length of the response has stopped changing
-            if (currentLength === previousLength) {
+            if (response.length === previousLength) {
                 responseComplete = true;
             } else {
-                previousLength = currentLength;
+                previousLength = response.length;
             }
 
-            console.log(`Check ${checkCount}: response length = ${currentLength}`);
+            console.log(`Check ${checkCount}: response length = ${response.length}`);
         }
 
         if (checkCount >= maxChecks) {
             console.warn('Max checks reached, response might be incomplete.');
         }
-
-        console.log('Response:', response);
 
         await browser.close();
         return response || 'No response found';
