@@ -31,7 +31,7 @@ async function askChatGPT(prompt) {
 
     try {
         // Go to the ChatGPT chat page directly with an increased timeout
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 120000 });
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 180000 });
 
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
@@ -44,7 +44,7 @@ async function askChatGPT(prompt) {
         }
 
         // Wait for the initial elements to ensure the page is loaded
-        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
+        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 120000 });
 
         // Type the prompt into the textarea
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
@@ -53,14 +53,14 @@ async function askChatGPT(prompt) {
         await page.waitForFunction(() => {
             const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
             return sendButton && !sendButton.disabled;
-        }, { timeout: 60000 });
+        }, { timeout: 120000 });
 
         // Click the send button
         await page.click('button[data-testid="fruitjuice-send-button"]');
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
-        await page.waitForSelector(responseSelector, { timeout: 120000 });
+        await page.waitForSelector(responseSelector, { timeout: 180000 });
 
         let previousLength = 0;
         let currentLength = 0;
