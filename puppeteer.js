@@ -63,6 +63,19 @@ async function askChatGPT(prompt) {
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
         console.log('Prompt typed');
 
+        // Additional logging for send button state
+        const sendButtonExists = await page.evaluate(() => {
+            const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
+            if (sendButton) {
+                return {
+                    exists: true,
+                    disabled: sendButton.disabled,
+                };
+            }
+            return { exists: false, disabled: true };
+        });
+        console.log('Send button state:', sendButtonExists);
+
         // Wait for the send button to become enabled
         await page.waitForFunction(() => {
             const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
