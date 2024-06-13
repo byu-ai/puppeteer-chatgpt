@@ -52,8 +52,14 @@ async function askChatGPT(prompt) {
         // Type the prompt into the textarea
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
 
-        // Click the send button or press Enter
-        await page.click('button[data-testid="send-button"]');
+        // Wait for the send button to become enabled
+        await page.waitForFunction(() => {
+            const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
+            return sendButton && !sendButton.disabled;
+        }, { timeout: 60000 });
+
+        // Click the send button
+        await page.click('button[data-testid="fruitjuice-send-button"]');
 
         // Wait for the response
         await page.waitForSelector('div[data-message-author-role="assistant"] .markdown.prose', { timeout: 60000 });
