@@ -64,28 +64,31 @@ async function askChatGPT(prompt) {
         console.log('Prompt typed');
 
         // Additional logging for send button state
-        const sendButtonExists = await page.evaluate(() => {
+        const sendButtonState = await page.evaluate(() => {
             const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
             if (sendButton) {
                 return {
                     exists: true,
                     disabled: sendButton.disabled,
+                    class: sendButton.className,
+                    text: sendButton.innerText,
                 };
             }
             return { exists: false, disabled: true };
         });
-        console.log('Send button state:', sendButtonExists);
+        console.log('Send button state:', sendButtonState);
 
-        // Wait for the send button to become enabled
-        await page.waitForFunction(() => {
-            const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
-            return sendButton && !sendButton.disabled;
-        }, { timeout: 60000 });
-        console.log('Send button enabled');
-
-        // Click the send button
-        await page.click('button[data-testid="fruitjuice-send-button"]');
-        console.log('Send button clicked');
+        if (sendButtonState.exists && sendButtonState.disabled) {
+            console.log('Send button is disabled. Attempting to click it...');
+            await page.click('button[data-testid="fruitjuice-send-button"]');
+            console.log('Clicked the send button');
+        } else if (sendButtonState.exists) {
+            console.log('Send button is enabled. Clicking it...');
+            await page.click('button[data-testid="fruitjuice-send-button"]');
+            console.log('Send button clicked');
+        } else {
+            throw new Error('Send button is not present');
+        }
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
