@@ -6,6 +6,7 @@ const path = require('path');
 puppeteer.use(StealthPlugin());
 
 async function askChatGPT(prompt) {
+    console.log('Launching browser...');
     const browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -27,11 +28,15 @@ async function askChatGPT(prompt) {
     if (fs.existsSync(cookiesPath)) {
         const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf8'));
         await page.setCookie(...cookies);
+        console.log('Cookies loaded');
+    } else {
+        console.log('Cookies file not found');
     }
 
     try {
-        // Go to the ChatGPT chat page directly with an increased timeout
+        console.log('Navigating to ChatGPT page...');
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 180000 });
+        console.log('Page loaded');
 
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
@@ -42,24 +47,31 @@ async function askChatGPT(prompt) {
             throw new Error('Prompt textarea is not present on the page');
         }
 
+        console.log('Prompt textarea is present');
+
         // Wait for the initial elements to ensure the page is loaded
         await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 120000 });
+        console.log('Prompt textarea is ready');
 
         // Type the prompt into the textarea
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
+        console.log('Prompt typed');
 
         // Wait for the send button to become enabled
         await page.waitForFunction(() => {
             const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
             return sendButton && !sendButton.disabled;
         }, { timeout: 60000 });
+        console.log('Send button enabled');
 
         // Click the send button
         await page.click('button[data-testid="fruitjuice-send-button"]');
+        console.log('Send button clicked');
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
         await page.waitForSelector(responseSelector, { timeout: 180000 });
+        console.log('Response selector found');
 
         let previousLength = 0;
         let responseComplete = false;
@@ -99,6 +111,7 @@ async function askChatGPT(prompt) {
         // Capture screenshot on error (optional)
         try {
             await page.screenshot({ path: 'error_screenshot.png' });
+            console.log('Screenshot captured');
         } catch (screenshotError) {
             console.error('Error capturing screenshot:', screenshotError);
         }
