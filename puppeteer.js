@@ -1,7 +1,20 @@
 const puppeteer = require('puppeteer');
 
 async function askChatGPT(prompt) {
-    const browser = await puppeteer.launch({ headless: false }); // Run in headful mode for debugging
+    const browser = await puppeteer.launch({
+        headless: true, // Ensure headless mode
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process', // <- this one doesn't work on Windows
+            '--disable-gpu'
+        ]
+    });
+
     const page = await browser.newPage();
 
     try {
