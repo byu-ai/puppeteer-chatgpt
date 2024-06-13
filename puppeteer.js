@@ -66,8 +66,8 @@ async function askChatGPT(prompt) {
 
         // Extract the response text
         const response = await page.evaluate(() => {
-            const responseElement = document.querySelector('div[data-message-author-role="assistant"] .markdown.prose');
-            return responseElement ? responseElement.innerText : 'No response found';
+            const responseElements = document.querySelectorAll('div[data-message-author-role="assistant"] .markdown.prose');
+            return Array.from(responseElements).map(el => el.innerText).join('\n');
         });
 
         await browser.close();
