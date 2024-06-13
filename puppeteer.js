@@ -33,16 +33,13 @@ async function askChatGPT(prompt) {
         // Go to the ChatGPT chat page directly with an increased timeout
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 120000 });
 
-        // Log the page content to see what is being loaded
-        const content = await page.content();
-        console.log(content);
-
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
             return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
         });
 
         if (!promptInputExists) {
+            console.log('Prompt textarea is not present on the page');
             throw new Error('Prompt textarea is not present on the page');
         }
 
@@ -97,6 +94,8 @@ async function askChatGPT(prompt) {
         if (checkCount >= maxChecks) {
             console.warn('Max checks reached, response might be incomplete.');
         }
+
+        console.log('Response:', response);
 
         await browser.close();
         return response || 'No response found';
