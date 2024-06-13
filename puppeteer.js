@@ -31,7 +31,7 @@ async function askChatGPT(prompt) {
 
     try {
         // Go to the ChatGPT chat page directly with an increased timeout
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 120000 });
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 60000 });
 
         // Log the page content to see what is being loaded
         const content = await page.content();
@@ -61,37 +61,37 @@ async function askChatGPT(prompt) {
         // Click the send button
         await page.click('button[data-testid="fruitjuice-send-button"]');
 
-        // Wait for the response and continuously check for completion
+        // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
         await page.waitForSelector(responseSelector, { timeout: 60000 });
 
-        // Continuously check if the response is still loading
+        let previousLength = 0;
+        let currentLength = 0;
         let responseComplete = false;
         let response = '';
-        let maxChecks = 60; // Max checks to prevent infinite loop
+        const maxChecks = 60; // Max checks to prevent infinite loop
         let checkCount = 0;
-        
+
         while (!responseComplete && checkCount < maxChecks) {
             checkCount++;
             await page.waitForTimeout(1000); // Wait for a second before checking again
 
-            responseComplete = await page.evaluate(() => {
-                const loadingSpinner = document.querySelector('button[data-testid="fruitjuice-send-button"] svg[role="status"]');
-                return !loadingSpinner; // Response is complete when spinner is not present
-            });
-
-            console.log(`Check ${checkCount}: responseComplete = ${responseComplete}`);
-
-            // Scroll to the bottom of the page to load any lazy-loaded content
-            await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-            
-            // Get the response so far
+            // Get the response text so far
             response = await page.evaluate(() => {
-                const responseElements = document.querySelectorAll('div[data-message-author-role="assistant"] .markdown.prose');
-                return Array.from(responseElements).map(el => el.innerText).join('\n');
+                const responseElement = document.querySelector('div[data-message-author-role="assistant"] .markdown.prose');
+                return responseElement ? responseElement.innerText : '';
             });
 
-            console.log(`Partial response after check ${checkCount}: ${response}`);
+            currentLength = response.length;
+
+            // Check if the length of the response has stopped changing
+            if (currentLength === previousLength) {
+                responseComplete = true;
+            } else {
+                previousLength = currentLength;
+            }
+
+            console.log(`Check ${checkCount}: response length = ${currentLength}`);
         }
 
         if (checkCount >= maxChecks) {
@@ -99,7 +99,7 @@ async function askChatGPT(prompt) {
         }
 
         await browser.close();
-        return response;
+        return response || 'No response found';
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
         await page.screenshot({ path: 'error_screenshot.png' }); // Capture screenshot on error (optional)
