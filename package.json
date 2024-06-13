@@ -9,6 +9,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "puppeteer": "^13.7.0",
+    "puppeteer-extra": "^3.2.3",  // Ensure this is added
+    "puppeteer-extra-plugin-stealth": "^2.7.9",  // Ensure this is added
     "body-parser": "^1.19.0",
     "cors": "^2.8.5"
   },
