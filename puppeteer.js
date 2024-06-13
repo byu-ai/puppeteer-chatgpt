@@ -30,8 +30,8 @@ async function askChatGPT(prompt) {
     }
 
     try {
-        // Go to the ChatGPT chat page directly
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
+        // Go to the ChatGPT chat page directly with an increased timeout
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 60000 });
 
         // Log the page content to see what is being loaded
         const content = await page.content();
