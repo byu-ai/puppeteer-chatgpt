@@ -68,12 +68,19 @@ async function askChatGPT(prompt) {
         // Continuously check if the response is still loading
         let responseComplete = false;
         let response = '';
-        while (!responseComplete) {
+        let maxChecks = 60; // Max checks to prevent infinite loop
+        let checkCount = 0;
+        
+        while (!responseComplete && checkCount < maxChecks) {
+            checkCount++;
             await page.waitForTimeout(1000); // Wait for a second before checking again
+
             responseComplete = await page.evaluate(() => {
                 const loadingSpinner = document.querySelector('button[data-testid="fruitjuice-send-button"] svg[role="status"]');
                 return !loadingSpinner; // Response is complete when spinner is not present
             });
+
+            console.log(`Check ${checkCount}: responseComplete = ${responseComplete}`);
 
             // Scroll to the bottom of the page to load any lazy-loaded content
             await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -83,6 +90,12 @@ async function askChatGPT(prompt) {
                 const responseElements = document.querySelectorAll('div[data-message-author-role="assistant"] .markdown.prose');
                 return Array.from(responseElements).map(el => el.innerText).join('\n');
             });
+
+            console.log(`Partial response after check ${checkCount}: ${response}`);
+        }
+
+        if (checkCount >= maxChecks) {
+            console.warn('Max checks reached, response might be incomplete.');
         }
 
         await browser.close();
