@@ -21,18 +21,21 @@ async function askChatGPT(prompt) {
         // Go to the ChatGPT chat page directly
         await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2' });
 
-        // Wait for the initial elements to ensure the page is loaded
-        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
+        // Log the page content to see what is being loaded
+        const content = await page.content();
+        console.log(content);
 
-        // Check if the prompt input field is visible
-        const isVisible = await page.evaluate(() => {
-            const textarea = document.querySelector('textarea[placeholder="Message ChatGPT"]');
-            return textarea && textarea.offsetParent !== null;
+        // Check if the prompt input field is present in the page content
+        const promptInputExists = await page.evaluate(() => {
+            return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
         });
 
-        if (!isVisible) {
-            throw new Error('Prompt textarea is not visible on the page');
+        if (!promptInputExists) {
+            throw new Error('Prompt textarea is not present on the page');
         }
+
+        // Wait for the initial elements to ensure the page is loaded
+        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
 
         // Type the prompt into the textarea
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
