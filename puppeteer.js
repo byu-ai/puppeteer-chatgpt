@@ -22,7 +22,7 @@ async function askChatGPT(prompt) {
 
     const page = await browser.newPage();
 
-    // Load cookies from the JSON file if it exists
+    // Load cookies from the JSON file
     const cookiesPath = path.resolve(__dirname, 'cookies.json');
     if (fs.existsSync(cookiesPath)) {
         const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf8'));
@@ -36,9 +36,6 @@ async function askChatGPT(prompt) {
         // Log the page content to see what is being loaded
         const content = await page.content();
         console.log(content);
-
-        // Capture a screenshot of the loaded page
-        await page.screenshot({ path: 'loaded_page.png' });
 
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
@@ -71,10 +68,7 @@ async function askChatGPT(prompt) {
         return response;
     } catch (error) {
         console.error('Error in Puppeteer script:', error);
-
-        // Capture screenshot on error (optional)
-        await page.screenshot({ path: 'error_screenshot.png' });
-        
+        await page.screenshot({ path: 'error_screenshot.png' }); // Capture screenshot on error (optional)
         await browser.close();
         throw error;
     }
