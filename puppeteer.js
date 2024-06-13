@@ -16,7 +16,7 @@ async function askChatGPT(prompt) {
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process', // <- this one doesn't work on Windows
+            '--single-process',
             '--disable-gpu'
         ]
     });
@@ -40,7 +40,7 @@ async function askChatGPT(prompt) {
 
         // Wait for potential dynamic content to load
         await page.waitForTimeout(5000);
-        
+
         // Check if the prompt input field is present in the page content
         const promptInputExists = await page.evaluate(() => {
             return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
