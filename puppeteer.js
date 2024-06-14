@@ -114,13 +114,13 @@ async function askChatGPT(prompt) {
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
-        await page.waitForSelector(responseSelector, { timeout: 180000 });
+        await page.waitForSelector(responseSelector, { timeout: 300000 });
         console.log('Response selector found');
 
         let previousLength = 0;
         let responseComplete = false;
         let response = '';
-        const maxChecks = 120; // Max checks to prevent infinite loop
+        const maxChecks = 300; // Max checks to prevent infinite loop
         let checkCount = 0;
 
         while (!responseComplete && checkCount < maxChecks) {
