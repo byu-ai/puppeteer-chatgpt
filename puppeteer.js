@@ -35,7 +35,7 @@ async function askChatGPT(prompt) {
 
     try {
         console.log('Navigating to ChatGPT page...');
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 60000 });
         console.log('Page loaded');
 
         // Wait for potential dynamic content to load
@@ -56,7 +56,7 @@ async function askChatGPT(prompt) {
             await page.screenshot({ path: 'cloudflare_challenge.png' });
 
             // Retry navigation to bypass challenge
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 30000 });
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 60000 });
             await page.waitForTimeout(5000);
 
             // Recheck for prompt textarea
