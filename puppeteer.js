@@ -34,9 +34,24 @@ async function askChatGPT(prompt) {
     }
 
     try {
-        console.log('Navigating to ChatGPT page...');
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 60000 });
-        console.log('Page loaded');
+        const maxRetries = 3;
+        let attempt = 0;
+        let success = false;
+
+        while (attempt < maxRetries && !success) {
+            try {
+                console.log(`Navigating to ChatGPT page (attempt ${attempt + 1})...`);
+                await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 90000 });
+                console.log('Page loaded');
+                success = true;
+            } catch (error) {
+                console.error(`Navigation attempt ${attempt + 1} failed:`, error);
+                attempt++;
+                if (attempt >= maxRetries) {
+                    throw new Error('Failed to navigate to ChatGPT page after multiple attempts');
+                }
+            }
+        }
 
         // Wait for potential dynamic content to load
         await page.waitForTimeout(5000);
@@ -56,7 +71,7 @@ async function askChatGPT(prompt) {
             await page.screenshot({ path: 'cloudflare_challenge.png' });
 
             // Retry navigation to bypass challenge
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 60000 });
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 90000 });
             await page.waitForTimeout(5000);
 
             // Recheck for prompt textarea
@@ -80,7 +95,7 @@ async function askChatGPT(prompt) {
         console.log('Prompt typed');
 
         // Click the send button immediately after typing the prompt
-        await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 }); // Adjust timeout as needed
+        await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 });
         await page.click('button[data-testid="fruitjuice-send-button"]');
         console.log('Clicked the send button');
 
