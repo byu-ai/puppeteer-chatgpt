@@ -35,7 +35,7 @@ async function askChatGPT(prompt) {
 
     try {
         console.log('Navigating to ChatGPT page...');
-        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 180000 });
+        await page.goto('https://chat.openai.com/chat', { waitUntil: 'networkidle2', timeout: 30000 });
         console.log('Page loaded');
 
         // Wait for potential dynamic content to load
@@ -56,7 +56,7 @@ async function askChatGPT(prompt) {
             await page.screenshot({ path: 'cloudflare_challenge.png' });
 
             // Retry navigation to bypass challenge
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 180000 });
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 30000 });
             await page.waitForTimeout(5000);
 
             // Recheck for prompt textarea
@@ -72,39 +72,17 @@ async function askChatGPT(prompt) {
         console.log('Prompt textarea is present');
 
         // Wait for the initial elements to ensure the page is loaded
-        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 120000 });
+        await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
         console.log('Prompt textarea is ready');
 
         // Type the prompt into the textarea
         await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
         console.log('Prompt typed');
 
-        // Additional logging for send button state
-        const sendButtonState = await page.evaluate(() => {
-            const sendButton = document.querySelector('button[data-testid="fruitjuice-send-button"]');
-            if (sendButton) {
-                return {
-                    exists: true,
-                    disabled: sendButton.disabled,
-                    class: sendButton.className,
-                    text: sendButton.innerText,
-                };
-            }
-            return { exists: false, disabled: true };
-        });
-        console.log('Send button state:', sendButtonState);
-
-        if (sendButtonState.exists && sendButtonState.disabled) {
-            console.log('Send button is disabled. Attempting to click it...');
-            await page.click('button[data-testid="fruitjuice-send-button"]');
-            console.log('Clicked the send button');
-        } else if (sendButtonState.exists) {
-            console.log('Send button is enabled. Clicking it...');
-            await page.click('button[data-testid="fruitjuice-send-button"]');
-            console.log('Send button clicked');
-        } else {
-            throw new Error('Send button is not present');
-        }
+        // Click the send button immediately after typing the prompt
+        await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 }); // Adjust timeout as needed
+        await page.click('button[data-testid="fruitjuice-send-button"]');
+        console.log('Clicked the send button');
 
         // Wait for the response and check for completeness
         const responseSelector = 'div[data-message-author-role="assistant"] .markdown.prose';
