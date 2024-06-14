@@ -90,19 +90,24 @@ async function askChatGPT(prompt) {
         await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
         console.log('Prompt textarea is ready');
 
-        // Debug log before typing
-        console.log('Start typing prompt...');
+        // Directly set the value of the textarea
+        console.log('Setting prompt value directly...');
         const startTypingTime = Date.now();
+        await page.evaluate((promptText) => {
+            document.querySelector('textarea[placeholder="Message ChatGPT"]').value = promptText;
+        }, prompt);
+        console.log('Prompt value set');
 
-        // Type the prompt into the textarea
-        await page.type('textarea[placeholder="Message ChatGPT"]', prompt, { delay: 0 });
-        console.log('Prompt typed');
+        // Dispatch input event to ensure any necessary event listeners are triggered
+        await page.evaluate(() => {
+            const event = new Event('input', { bubbles: true });
+            document.querySelector('textarea[placeholder="Message ChatGPT"]').dispatchEvent(event);
+        });
 
-        // Debug log after typing
         const endTypingTime = Date.now();
-        console.log(`Typing duration: ${(endTypingTime - startTypingTime) / 1000} seconds`);
+        console.log(`Setting duration: ${(endTypingTime - startTypingTime) / 1000} seconds`);
 
-        // Click the send button immediately after typing the prompt
+        // Click the send button immediately after setting the prompt
         await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 });
         await page.click('button[data-testid="fruitjuice-send-button"]');
         console.log('Clicked the send button');
