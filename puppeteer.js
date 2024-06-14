@@ -90,9 +90,17 @@ async function askChatGPT(prompt) {
         await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
         console.log('Prompt textarea is ready');
 
+        // Debug log before typing
+        console.log('Start typing prompt...');
+        const startTypingTime = Date.now();
+
         // Type the prompt into the textarea
-        await page.type('textarea[placeholder="Message ChatGPT"]', prompt);
+        await page.type('textarea[placeholder="Message ChatGPT"]', prompt, { delay: 0 });
         console.log('Prompt typed');
+
+        // Debug log after typing
+        const endTypingTime = Date.now();
+        console.log(`Typing duration: ${(endTypingTime - startTypingTime) / 1000} seconds`);
 
         // Click the send button immediately after typing the prompt
         await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 });
