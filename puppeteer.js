@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const UserAgent = require('user-agents');
+const UserAgent = require('user-agents'); // Added user-agents package
 const fs = require('fs');
 const path = require('path');
 
@@ -24,8 +24,8 @@ async function askChatGPT(prompt) {
     const page = await browser.newPage();
 
     // Set a realistic user-agent
-    const userAgent = new UserAgent();
-    await page.setUserAgent(userAgent.toString());
+    const userAgent = new UserAgent(); // Use user-agents to set a realistic user-agent string
+    await page.setUserAgent(userAgent.toString()); // Set the user-agent
 
     // Load cookies from the JSON file
     const cookiesPath = path.resolve(__dirname, 'cookies.json');
@@ -66,8 +66,13 @@ async function askChatGPT(prompt) {
 
         await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
 
-        // Simulate typing the prompt
-        await page.type('textarea[placeholder="Message ChatGPT"]', prompt, { delay: 50 });
+        // Directly set the value of the textarea without a delay
+        await page.evaluate((promptText) => {
+            const textarea = document.querySelector('textarea[placeholder="Message ChatGPT"]');
+            textarea.value = promptText;
+            const event = new Event('input', { bubbles: true });
+            textarea.dispatchEvent(event);
+        }, prompt);
 
         await page.waitForSelector('button[data-testid="fruitjuice-send-button"]', { timeout: 10000 });
         await page.click('button[data-testid="fruitjuice-send-button"]');
