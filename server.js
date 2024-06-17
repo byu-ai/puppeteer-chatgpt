@@ -28,6 +28,17 @@ app.post('/ask-chatgpt', async (req, res) => {
     }
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 app.listen(port, () => {
     console.log(`Your app is listening on port ${port}`);
 });
