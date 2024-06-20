@@ -58,10 +58,10 @@ async function askChatGPT(prompt) {
         if (!promptInputExists) {
             // Log the page content for debugging
             const content = await page.content();
-            console.log(content);
+            console.log('Initial page load content:', content);
 
             // Capture screenshot
-            await page.screenshot({ path: 'cloudflare_challenge.png' });
+            await page.screenshot({ path: 'cloudflare_challenge_initial.png' });
 
             // Retry navigation to bypass challenge
             await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 90000 });
@@ -72,6 +72,10 @@ async function askChatGPT(prompt) {
             });
 
             if (!promptInputExistsRetry) {
+                const contentRetry = await page.content();
+                console.log('Retry page load content:', contentRetry);
+                await page.screenshot({ path: 'cloudflare_challenge_retry.png' });
+
                 throw new Error('Prompt textarea is not present on the page after retry');
             }
         }
