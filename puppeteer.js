@@ -1,8 +1,9 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const UserAgent = require('user-agents'); // Added user-agents package
+const UserAgent = require('user-agents');
 const fs = require('fs');
 const path = require('path');
+const cloudscraper = require('cloudscraper');
 
 puppeteer.use(StealthPlugin());
 
@@ -24,14 +25,25 @@ async function askChatGPT(prompt) {
     const page = await browser.newPage();
 
     // Set a realistic user-agent
-    const userAgent = new UserAgent(); // Use user-agents to set a realistic user-agent string
-    await page.setUserAgent(userAgent.toString()); // Set the user-agent
+    const userAgent = new UserAgent();
+    await page.setUserAgent(userAgent.toString());
 
     // Load cookies from the JSON file
     const cookiesPath = path.resolve(__dirname, 'cookies.json');
     if (fs.existsSync(cookiesPath)) {
         const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf8'));
         await page.setCookie(...cookies);
+    }
+
+    // Load local storage from the JSON file
+    const localStoragePath = path.resolve(__dirname, 'localStorage.json');
+    if (fs.existsSync(localStoragePath)) {
+        const localStorage = JSON.parse(fs.readFileSync(localStoragePath, 'utf8'));
+        await page.evaluate(localStorage => {
+            for (const [key, value] of Object.entries(localStorage)) {
+                localStorage.setItem(key, value);
+            }
+        }, localStorage);
     }
 
     try {
@@ -106,6 +118,20 @@ async function askChatGPT(prompt) {
             console.warn('Max checks reached, response might be incomplete.');
         }
 
+        // Save cookies and local storage to files
+        const cookies = await page.cookies();
+        fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
+
+        const localStorageData = await page.evaluate(() => {
+            let localStorageData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                localStorageData[key] = localStorage.getItem(key);
+            }
+            return localStorageData;
+        });
+        fs.writeFileSync(localStoragePath, JSON.stringify(localStorageData, null, 2));
+
         await browser.close();
         return response || 'No response found';
     } catch (error) {
@@ -117,3 +143,4 @@ async function askChatGPT(prompt) {
 }
 
 module.exports = { askChatGPT };
+
