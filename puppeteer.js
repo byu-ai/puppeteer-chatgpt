@@ -121,6 +121,19 @@ async function askChatGPT(prompt, retries = 5, delay = 5000) { // Constant delay
             console.warn('Max checks reached, response might be incomplete.');
         }
 
+        // Check for "Regenerate" button
+        const regenerateButtonExists = await page.evaluate(() => {
+            return !!document.querySelector('button[data-testid="regenerate-response-button"]');
+        });
+
+        if (regenerateButtonExists) {
+            console.log('Regenerate button found, clicking it.');
+            await page.click('button[data-testid="regenerate-response-button"]');
+
+            // Wait for the new response
+            await page.waitForSelector(responseSelector, { timeout: 300000 });
+        }
+
         // Save cookies and local storage to files
         const cookies = await page.cookies();
         fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
