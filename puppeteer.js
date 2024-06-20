@@ -7,7 +7,7 @@ const cloudscraper = require('cloudscraper');
 
 puppeteer.use(StealthPlugin());
 
-async function askChatGPT(prompt) {
+async function askChatGPT(prompt, retries = 5, delay = 5000) { // Constant delay of 5 seconds
     const browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -56,7 +56,6 @@ async function askChatGPT(prompt) {
         });
 
         if (!promptInputExists) {
-            // Log the page content for debugging
             const content = await page.content();
             console.log('Initial page load content:', content);
 
@@ -142,7 +141,14 @@ async function askChatGPT(prompt) {
         console.error('Error in Puppeteer script:', error);
         await page.screenshot({ path: 'error_screenshot.png' });
         await browser.close();
-        throw error;
+
+        if (retries > 0) {
+            console.log(`Retrying... attempts left: ${retries}`);
+            await new Promise(resolve => setTimeout(resolve, delay)); // Constant delay
+            return askChatGPT(prompt, retries - 1, delay); // Retry with constant delay
+        } else {
+            throw error;
+        }
     }
 }
 
