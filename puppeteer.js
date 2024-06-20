@@ -143,4 +143,3 @@ async function askChatGPT(prompt) {
 }
 
 module.exports = { askChatGPT };
-
