@@ -3,11 +3,10 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const UserAgent = require('user-agents');
 const fs = require('fs');
 const path = require('path');
-const cloudscraper = require('cloudscraper');
 
 puppeteer.use(StealthPlugin());
 
-async function askChatGPT(prompt, retries = 5, delay = 5000) { // Constant delay of 5 seconds
+async function askChatGPT(prompt) {
     const browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -61,6 +60,16 @@ async function askChatGPT(prompt, retries = 5, delay = 5000) { // Constant delay
 
             // Capture screenshot
             await page.screenshot({ path: 'cloudflare_challenge_initial.png' });
+
+            // Check for Cloudflare challenge
+            const isCloudflareChallenge = await page.evaluate(() => {
+                return document.body.innerText.includes("Please turn JavaScript on and reload the page.") ||
+                       document.body.innerText.includes("checking your browser before accessing");
+            });
+
+            if (isCloudflareChallenge) {
+                throw new Error('Cloudflare challenge detected');
+            }
 
             // Retry navigation to bypass challenge
             await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 90000 });
@@ -155,13 +164,11 @@ async function askChatGPT(prompt, retries = 5, delay = 5000) { // Constant delay
         await page.screenshot({ path: 'error_screenshot.png' });
         await browser.close();
 
-        if (retries > 0) {
-            console.log(`Retrying... attempts left: ${retries}`);
-            await new Promise(resolve => setTimeout(resolve, delay)); // Constant delay
-            return askChatGPT(prompt, retries - 1, delay); // Retry with constant delay
-        } else {
-            throw error;
+        if (error.message.includes('Cloudflare challenge detected')) {
+            return { error: 'Cloudflare challenge detected' };
         }
+
+        throw error;
     }
 }
 
