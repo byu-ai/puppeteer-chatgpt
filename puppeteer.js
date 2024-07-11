@@ -70,22 +70,6 @@ async function askChatGPT(prompt) {
             if (isCloudflareChallenge) {
                 throw new Error('Cloudflare challenge detected');
             }
-
-            // Retry navigation to bypass challenge
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"], timeout: 90000 });
-            await page.waitForTimeout(5000);
-
-            const promptInputExistsRetry = await page.evaluate(() => {
-                return !!document.querySelector('textarea[placeholder="Message ChatGPT"]');
-            });
-
-            if (!promptInputExistsRetry) {
-                const contentRetry = await page.content();
-                console.log('Retry page load content:', contentRetry);
-                await page.screenshot({ path: 'cloudflare_challenge_retry.png' });
-
-                throw new Error('Prompt textarea is not present on the page after retry');
-            }
         }
 
         await page.waitForSelector('textarea[placeholder="Message ChatGPT"]', { timeout: 60000 });
@@ -165,7 +149,7 @@ async function askChatGPT(prompt) {
         await browser.close();
 
         if (error.message.includes('Cloudflare challenge detected')) {
-            return { error: 'Cloudflare challenge detected' };
+            return { error: 'Cloudflare challenge detected', prompt };
         }
 
         throw error;
