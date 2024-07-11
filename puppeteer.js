@@ -68,7 +68,8 @@ async function askChatGPT(prompt) {
             });
 
             if (isCloudflareChallenge) {
-                throw new Error('Cloudflare challenge detected');
+                await browser.close();
+                return { error: 'Cloudflare challenge detected', prompt };
             }
         }
 
@@ -147,12 +148,7 @@ async function askChatGPT(prompt) {
         console.error('Error in Puppeteer script:', error);
         await page.screenshot({ path: 'error_screenshot.png' });
         await browser.close();
-
-        if (error.message.includes('Cloudflare challenge detected')) {
-            return { error: 'Cloudflare challenge detected', prompt };
-        }
-
-        throw error;
+        return { error: error.message, prompt };
     }
 }
 
