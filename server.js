@@ -20,6 +20,10 @@ app.post('/ask-chatgpt', async (req, res) => {
 
     try {
         const response = await askChatGPT(prompt);
+        if (response.error) {
+            console.log('Cloudflare challenge detected. Informing the user to complete the task manually.');
+            return res.status(500).json({ error: 'Cloudflare challenge detected. Please open ChatGPT in your browser and complete the task manually.' });
+        }
         console.log('Received response from ChatGPT:', response);
         res.json({ response });
     } catch (error) {
